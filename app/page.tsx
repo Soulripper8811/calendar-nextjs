@@ -16,6 +16,7 @@ interface Event {
   start: Date | string;
   allDay: boolean;
   id: number;
+  guests: string;
 }
 
 export default function Home() {
@@ -35,6 +36,7 @@ export default function Home() {
     start: "",
     allDay: false,
     id: 0,
+    guests: "",
   });
 
   useEffect(() => {
@@ -51,6 +53,7 @@ export default function Home() {
       });
     }
   }, []);
+
   function handleDateClick(arg: { date: Date; allDay: boolean }) {
     setNewEvent({
       ...newEvent,
@@ -60,8 +63,8 @@ export default function Home() {
     });
     setShowModal(true);
   }
+
   function addEvent(data: DropArg) {
-    console.log("Data: ", data);
     const event = {
       ...newEvent,
       start: data.date.toISOString(),
@@ -71,10 +74,12 @@ export default function Home() {
     };
     setAllEvents([...allEvents, event]);
   }
+
   function handleDeleteModal(data: { event: { id: string } }) {
     setShowDeleteModal(true);
     setIdToDelete(Number(data.event.id));
   }
+
   function handleDelete() {
     setAllEvents(
       allEvents.filter((event) => Number(event.id) !== Number(idToDelete))
@@ -90,14 +95,17 @@ export default function Home() {
       start: "",
       allDay: false,
       id: 0,
+      guests: "",
     });
     setShowDeleteModal(false);
     setIdToDelete(null);
   }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
     setNewEvent({
       ...newEvent,
-      title: e.target.value,
+      [name]: value,
     });
   };
 
@@ -110,8 +118,10 @@ export default function Home() {
       start: "",
       allDay: false,
       id: 0,
+      guests: "",
     });
   }
+
   return (
     <>
       <nav className="flex justify-between mb-12 border-b border-violet-100 p-4">
@@ -125,7 +135,7 @@ export default function Home() {
               headerToolbar={{
                 left: "prev,next today",
                 center: "title",
-                right: "resourceTimelineWook, dayGridMonth,timeGridWeek",
+                right: "dayGridMonth,timeGridWeek",
               }}
               events={allEvents}
               nowIndicator={true}
@@ -154,6 +164,8 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        {/* Delete Modal */}
         <Transition.Root show={showDeleteModal} as={Fragment}>
           <Dialog
             as="div"
@@ -237,6 +249,8 @@ export default function Home() {
             </div>
           </Dialog>
         </Transition.Root>
+
+        {/* Add Event Modal */}
         <Transition.Root show={showModal} as={Fragment}>
           <Dialog as="div" className="relative z-10" onClose={setShowModal}>
             <Transition.Child
@@ -284,19 +298,48 @@ export default function Home() {
                               name="title"
                               className="block w-full rounded-md border-0 py-1.5 text-gray-900 
                             shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
-                            focus:ring-2 
-                            focus:ring-inset focus:ring-violet-600 
+                            focus:ring-2 focus:ring-inset focus:ring-violet-600 
                             sm:text-sm sm:leading-6"
                               value={newEvent.title}
-                              onChange={(e) => handleChange(e)}
-                              placeholder="Title"
+                              onChange={handleChange}
+                              placeholder="Event Title"
+                            />
+                          </div>
+                          <div className="mt-2">
+                            <input
+                              type="date"
+                              name="start"
+                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+                            shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
+                            focus:ring-2 focus:ring-inset focus:ring-violet-600 
+                            sm:text-sm sm:leading-6"
+                              value={newEvent.start.toString().slice(0, 10)}
+                              onChange={handleChange}
+                              placeholder="Event Date"
+                            />
+                          </div>
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              name="guests"
+                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 
+                            shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
+                            focus:ring-2 focus:ring-inset focus:ring-violet-600 
+                            sm:text-sm sm:leading-6"
+                              value={newEvent.guests}
+                              onChange={handleChange}
+                              placeholder="Guests (comma separated emails)"
                             />
                           </div>
                           <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                             <button
                               type="submit"
                               className="inline-flex w-full justify-center rounded-md bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 sm:col-start-2 disabled:opacity-25"
-                              disabled={newEvent.title === ""}
+                              disabled={
+                                !newEvent.title ||
+                                !newEvent.start ||
+                                !newEvent.guests
+                              }
                             >
                               Create
                             </button>
